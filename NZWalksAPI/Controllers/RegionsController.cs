@@ -18,7 +18,8 @@ namespace NZWalksAPI.Controllers
             this.DbContext = dbContext;
         }
         [HttpGet]
-        public IActionResult GetAll()
+        //public ActionResult GetAll() -- Without Async
+        public async Task<IActionResult> GetAll()
         {
             /*var regions = new List<Region>
             {
@@ -40,7 +41,10 @@ namespace NZWalksAPI.Controllers
 
             //Now In Regions when we hover we can see "Domain Model Region". So we're sending Domain Modle to client which is not a good practice;
             //Get Data from Database -- Domain Models here
-            var regions = DbContext.Regions.ToList();
+            //var regions = DbContext.Regions.ToList();
+            //Making this method async
+            //Entity Framework provides Async functionality to all the methods
+            var regions = await DbContext.Regions.ToListAsync();
 
             //Map Domain Models to DTO's
             var regionsDto = new List<RegionDto>();
@@ -63,10 +67,10 @@ namespace NZWalksAPI.Controllers
         //Get REgion by ID
         [HttpGet]
         [Route("{id:Guid}")] //Type not required to pass
-        public IActionResult GetById(Guid id) //([FromRoute] Guid id) Its working without FromRoute as well.not int--got error bc of this
+        public async Task<IActionResult> GetById(Guid id) //([FromRoute] Guid id) Its working without FromRoute as well.not int--got error bc of this
         {
             //var region = DbContext.Regions.Find(id);
-            var region = DbContext.Regions.FirstOrDefault(x => x.Id == id); //It will work if we're searching with Name or something else.
+            var region = await DbContext.Regions.FirstOrDefaultAsync(x => x.Id == id); //It will work if we're searching with Name or something else.
             if (region == null)
             {
                 return NotFound();
@@ -78,7 +82,7 @@ namespace NZWalksAPI.Controllers
         //POST : same route as above, but when user selects POST, it will come here
         //In Post method we have FromBody and giving type what is coming.
         [HttpPost]
-        public IActionResult Create([FromBody] AddRegionDto addRegionRequestDTO)
+        public async Task<IActionResult> Create([FromBody] AddRegionDto addRegionRequestDTO)
         {
             //Map or Convert DTO to Domain Model
             var regionDomainModel = new Region
@@ -90,8 +94,8 @@ namespace NZWalksAPI.Controllers
 
             //Use Domain Model to create Region
 
-            DbContext.Regions.Add(regionDomainModel);
-            DbContext.SaveChanges(); //This line is important. Else it wont save data in database. Here only it will save data.
+            await DbContext.Regions.AddAsync(regionDomainModel);
+            await DbContext.SaveChangesAsync(); //This line is important. Else it wont save data in database. Here only it will save data.
 
             //Map Domain Model back to DTO
             var regionDto = new RegionDto
@@ -109,9 +113,9 @@ namespace NZWalksAPI.Controllers
         //PUT
         [HttpPut]
         [Route("{id:Guid}")]
-        public IActionResult Update([FromRoute] Guid id,[FromBody] UpdateRegionDto regionData)
+        public async Task<IActionResult> Update([FromRoute] Guid id,[FromBody] UpdateRegionDto regionData)
         {
-            var regionDomainModel = DbContext.Regions.Find(id); //So here we're directly get the data so, if we update on this one it will directly update in Database
+            var regionDomainModel = await DbContext.Regions.FindAsync(id); //So here we're directly get the data so, if we update on this one it will directly update in Database
             if(regionDomainModel == null)
             {
                 return NotFound();
@@ -121,7 +125,7 @@ namespace NZWalksAPI.Controllers
             regionDomainModel.Name = regionData.Name;
             regionDomainModel.RegionImageUrl = regionData.RegionImageUrl;
 
-            DbContext.SaveChanges();
+            await DbContext.SaveChangesAsync();
 
             //Convert Domain Model to DTO
             var regionDTO = new RegionDto
@@ -138,15 +142,15 @@ namespace NZWalksAPI.Controllers
         //DELETE
         [HttpDelete]
         [Route("{id:Guid}")]
-        public IActionResult Delete([FromRoute] Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var regionDomainModel = DbContext.Regions.Find(id);
+            var regionDomainModel = await DbContext.Regions.FindAsync(id);
             if(regionDomainModel == null)
             {
                 return NotFound();
             }
-            DbContext.Regions.Remove(regionDomainModel);
-            DbContext.SaveChanges();
+            DbContext.Regions.Remove(regionDomainModel); //Remove doesn't have async version.
+            await DbContext.SaveChangesAsync();
             return Ok();
         }
     }
