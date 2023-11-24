@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NZWalksAPI.Data;
 using NZWalksAPI.Models.Domain;
 using NZWalksAPI.Models.DTO;
 using NZWalksAPI.Repositories;
+using System.Collections.Generic;
 
 namespace NZWalksAPI.Controllers
 {
@@ -15,12 +17,14 @@ namespace NZWalksAPI.Controllers
     {
         private readonly NZWalksDbContext DbContext;
         private readonly IRegionRepository regionRepository;
+        private readonly IMapper mapper;
 
         //Now we're using RegionRepository, so no need of DbContext;
-        public RegionsController(NZWalksDbContext dbContext, IRegionRepository regionRepository)
+        public RegionsController(NZWalksDbContext dbContext, IRegionRepository regionRepository, IMapper mapper)
         {
             this.DbContext = dbContext;
             this.regionRepository = regionRepository;
+            this.mapper = mapper;
         }
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -33,18 +37,22 @@ namespace NZWalksAPI.Controllers
             //Entity Framework provides Async functionality to all the methods
             var regions = await regionRepository.GetAllAsync();
             //Map Domain Models to DTO's
-            var regionsDto = new List<RegionDto>();
-            foreach (var region in regions)
-            {
-                regionsDto.Add(new RegionDto
-                {
-                    Id = region.Id,
-                    Code = region.Code,
-                    RegionImageUrl = region.RegionImageUrl,
-                    Name = region.Name
-                }); ;
+            //var regionsDto = new List<RegionDto>();
+            //foreach (var region in regions)
+            //{
+            //    regionsDto.Add(new RegionDto
+            //    {
+            //        Id = region.Id,
+            //        Code = region.Code,
+            //        RegionImageUrl = region.RegionImageUrl,
+            //        Name = region.Name
+            //    }); ;
 
-            }
+            //}
+
+            //Map Domain Models to DTOs
+            //Returns mapped Destination object. "Destination is DTO" here and "Source object is Domain Model". And type is inferred from source object.
+            var regionsDto = mapper.Map<List<RegionDto>>(regions);
 
             //Return DTOs
             return Ok(regionsDto);
@@ -62,7 +70,10 @@ namespace NZWalksAPI.Controllers
                 return NotFound();
             }
 
-            return Ok(region);
+            //Map/Convert Region Domain Model to DTOs
+            var regionDto = mapper.Map<RegionDto>(region);
+
+            return Ok(regionDto);
         }
 
         //POST : same route as above, but when user selects POST, it will come here
@@ -71,25 +82,21 @@ namespace NZWalksAPI.Controllers
         public async Task<IActionResult> Create([FromBody] AddRegionDto addRegionRequestDTO)
         {
             //Map or Convert DTO to Domain Model
-            var regionDomainModel = new Region
-            {
-                Code = addRegionRequestDTO.Code,
-                Name = addRegionRequestDTO.Name,
-                RegionImageUrl = addRegionRequestDTO.RegionImageUrl
-            };
+            //var regionDomainModel = new Region
+            //{
+            //    Code = addRegionRequestDTO.Code,
+            //    Name = addRegionRequestDTO.Name,
+            //    RegionImageUrl = addRegionRequestDTO.RegionImageUrl
+            //};
+
+            var regionDomainModel = mapper.Map<Region>(addRegionRequestDTO);
 
             //Use Domain Model to create Region
 
             regionDomainModel = await regionRepository.CreateAsync(regionDomainModel);
 
             //Map Domain Model back to DTO
-            var regionDto = new RegionDto
-            {
-                Id = regionDomainModel.Id,
-                Code = regionDomainModel.Code,
-                Name = regionDomainModel.Name,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
+            var regionDto = mapper.Map<RegionDto>(regionDomainModel);
 
             //For post 201 code should send. And we are sending the created Database data
             //here we're indirectly calling GetByID Method with the ID
@@ -102,12 +109,13 @@ namespace NZWalksAPI.Controllers
         public async Task<IActionResult> Update([FromRoute] Guid id,[FromBody] UpdateRegionDto regionData)
         {
             //Map DTO To Domain Model
-            var regionDomainModel = new Region
-            {
-                Code = regionData.Code,
-                RegionImageUrl = regionData.RegionImageUrl,
-                Name = regionData.Name,
-            };
+            //var regionDomainModel = new Region
+            //{
+            //    Code = regionData.Code,
+            //    RegionImageUrl = regionData.RegionImageUrl,
+            //    Name = regionData.Name,
+            //};
+            var regionDomainModel = mapper.Map<Region>(regionData);
             regionDomainModel = await regionRepository.UpdateAsync(id, regionDomainModel);
 
             if(regionDomainModel == null)
@@ -116,15 +124,7 @@ namespace NZWalksAPI.Controllers
             }
 
             //Convert Domain Model to DTO
-            var regionDTO = new RegionDto
-            {
-                Id = regionDomainModel.Id,
-                Code = regionDomainModel.Code,
-                Name = regionDomainModel.Name,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
-
-            return Ok(regionDTO);
+            return Ok(mapper.Map<RegionDto>(regionDomainModel));
         }
 
         //DELETE
@@ -137,12 +137,13 @@ namespace NZWalksAPI.Controllers
             {
                 return NotFound();
             }
-            return Ok();
+            var regionDTO = mapper.Map<RegionDto>(regionDomainModel);
+            return Ok(regionDTO);
         }
     }
 }
 
-//BEFORE IMPLEMENTING REPOSITORY PATTERNS
+//BEFORE IMPLEMENTING REPOSITORY PATTERNS & Automapper
 /*
  * namespace NZWalksAPI.Controllers
     {
