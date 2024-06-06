@@ -60,7 +60,7 @@ namespace NZWalksAPI.Controllers
 
         //Get REgion by ID
         [HttpGet]
-        [Route("{id:Guid}")] //Type not required to pass
+        [Route("{id:Guid}")]
         public async Task<IActionResult> GetById(Guid id) //([FromRoute] Guid id) Its working without FromRoute as well.not int--got error bc of this
         {
             //var region = DbContext.Regions.Find(id);

@@ -20,6 +20,8 @@ namespace NZWalksAPI.Mappings
             //CreateMap<UserDTO, UserDomain>().ForMember(x => x.UserName, opt => opt.MapFrom(x => x.FullName)).ReverseMap();*/
             CreateMap<AddWalkRequestDTO, Walk>().ReverseMap();
             CreateMap<WalkDto, Walk>().ReverseMap();    
+            CreateMap<Difficulty, DifficultyDto>().ReverseMap();
+            CreateMap<UpdateWalkRequestDto, Walk>().ReverseMap();
         }
     }
     /*public class UserDTO
