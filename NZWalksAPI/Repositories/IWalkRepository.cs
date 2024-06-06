@@ -6,7 +6,7 @@ namespace NZWalksAPI.Repositories
     {
         //Task type is a return type
         Task<Walk> CreateAsync(Walk walk);
-        Task<List<Walk>> GetAllWalks();
+        Task<List<Walk>> GetAllWalks(string? filterOn = null, string? filterQuery = null);
 
         Task<Walk?> GetWalkByID(Guid ID);
 

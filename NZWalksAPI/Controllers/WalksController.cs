@@ -35,10 +35,11 @@ namespace NZWalksAPI.Controllers
         }
 
         //Get Walks
+        //GET: /api/walks?filterOn=Name&filterQuery=Track
         [HttpGet]
-        public async Task<IActionResult> GetAllWalks()
+        public async Task<IActionResult> GetAllWalks([FromQuery] string? filterOn, [FromQuery] string? filterQuery)
         {
-            var walksDomainModel = await walkRepository.GetAllWalks();
+            var walksDomainModel = await walkRepository.GetAllWalks(filterOn, filterQuery);
             return Ok(mapper.Map<List<WalkDto>>(walksDomainModel));
         }
 
