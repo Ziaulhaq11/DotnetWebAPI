@@ -16,7 +16,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<NZWalksDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("NZWalksConnectionString")));
 
 //builder.Services.AddScoped<IRegionRepository, InMemoryRepository>(); -- Like this we can change the Repository to a differnt database
-builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>(); //type and the name of Repository to add the Repository Pattern
+builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>(); //type and the name of Repository to add the Repository 
+builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 var app = builder.Build();

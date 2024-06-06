@@ -18,7 +18,8 @@ namespace NZWalksAPI.Mappings
             //Now we have different property names. So we do like this
             //x.UserName is Destination. MapFrom x.FullName is the source
             //CreateMap<UserDTO, UserDomain>().ForMember(x => x.UserName, opt => opt.MapFrom(x => x.FullName)).ReverseMap();*/
-
+            CreateMap<AddWalkRequestDTO, Walk>().ReverseMap();
+            CreateMap<WalkDto, Walk>().ReverseMap();    
         }
     }
     /*public class UserDTO
