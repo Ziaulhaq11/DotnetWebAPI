@@ -19,7 +19,7 @@ namespace NZWalksAPI.Repositories
             return walk;
         }
 
-        public async Task<List<Walk>> GetAllWalks(string? filterOn = null, string? filterQuery = null)
+        public async Task<List<Walk>> GetAllWalks(string? filterOn = null, string? filterQuery = null, string? sortBy = null, bool isAscending = true, int pageNumber = 1, int pageSize = 1000)
         {
             //return await dbContext.Walks.Include(x => x.Difficulty).Include(x => x.Regions).ToListAsync();
             //return await dbContext.Walks.Include("Regions").Include("Difficulty").ToListAsync();
@@ -30,13 +30,31 @@ namespace NZWalksAPI.Repositories
             //Filtering
             if (string.IsNullOrWhiteSpace(filterOn) == false && string.IsNullOrWhiteSpace(filterQuery) == false)
             {
-                if (filterOn.Equals("Name",StringComparison.OrdinalIgnoreCase)) {
+                if (filterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
                     walks = walks.Where(x => x.Name.Contains(filterQuery));
                 }
             }
 
+            //Sorting
+            if (string.IsNullOrWhiteSpace(sortBy) == false)
+            {
+                if (sortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending ? walks.OrderBy(x => x.Name) : walks.OrderByDescending(x => x.Name);
+                }
+                else if (sortBy.Equals("Length", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending ? walks.OrderBy(x => x.LengthInKm) : walks.OrderByDescending(x => x.LengthInKm);
+                }
+            }
+
+            //Pagination
+            var skipResults = (pageNumber - 1) * pageSize; //It will skip that much data
+            //Example -- page 1, skipResults = 0;
+            //page 2, pageSize = 10, skipResults = 10; 
             //if filter is there, then we get filtered data, else all data.
-            return await walks.ToListAsync();
+            return await walks.Skip(skipResults).Take(pageSize).ToListAsync();
         }
 
         public async Task<Walk?> GetWalkByID(Guid ID)
